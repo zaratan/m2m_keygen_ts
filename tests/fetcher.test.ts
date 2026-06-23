@@ -1,9 +1,10 @@
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { sign } from '../src/signature';
 import { generateFetcher } from '../src/fetcher';
 import { mockDate } from './support/mockDate';
 
 // Create a mock fetcher
-const mockFetch = jest.fn((url, options) => ({
+const mockFetch = vi.fn((_url: any, _init: any) => ({
   result: 'ok',
 }));
 
@@ -11,7 +12,7 @@ describe('generateFetcher', () => {
   const frozenTime = new Date();
   const timestamp = Math.round(frozenTime.getTime() / 1000);
 
-  let unfreezeTime: Function;
+  let unfreezeTime: () => void;
 
   beforeAll(() => {
     unfreezeTime = mockDate(frozenTime);

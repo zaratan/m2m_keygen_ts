@@ -4,11 +4,11 @@ This gem exists for simplifying Machine to Machine signature generation and veri
 
 ## Installation
 
-Install the gem and add to the application's Gemfile by executing:
+Add the package to your project by executing:
 
-    $ yarn add m2m-keygen
+    $ pnpm add m2m-keygen
 
-or if using npm
+or with npm
 
     $ npm install --save m2m-keygen
 

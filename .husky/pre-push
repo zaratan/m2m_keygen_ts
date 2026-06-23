@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-yarn lint
-yarn test
+pnpm lint
+pnpm test
 bin/check_version_change
