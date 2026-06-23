@@ -1,15 +1,15 @@
 {
   "name": "m2m-keygen",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Simplify Machine to Machine signature generation in a secure way",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "repository": "https://github.com/Billcorporate/m2m_keygen_ts",
+  "repository": "https://github.com/zaratan/m2m_keygen_ts",
   "bugs": {
-    "url": "https://github.com/Billcorporate/m2m_keygen_ts/issues"
+    "url": "https://github.com/zaratan/m2m_keygen_ts/issues"
   },
   "author": "Denis <Zaratan> Pasin <zaratan@hey.com>",
   "license": "MIT",
