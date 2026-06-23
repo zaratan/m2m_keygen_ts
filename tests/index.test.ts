@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import * as All from '../src/index';
 
 describe('Signature', () => {

@@ -7,7 +7,7 @@ jobs:
   changelog:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Fetch main branch
         run: git fetch origin main:main
       - name: Verify changes in Changelog
@@ -15,7 +15,7 @@ jobs:
   version_match:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Fetch main branch
         run: git fetch origin main:main
       - name: Check version matching

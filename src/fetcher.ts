@@ -16,7 +16,7 @@ export const generateFetcher =
   (entry: string, params: any = {}, init?: any) => {
     if (!init) init = {};
     const headers: { [key: string]: string } = { ...init.headers };
-    const path = entry.replace(/^(.*\/\/)?[^\/]+/, '');
+    const path = entry.replace(/^(.*\/\/)?[^/]+/, '');
 
     params.expiry ||= Math.round(Number(new Date()) / 1000) + 90;
 

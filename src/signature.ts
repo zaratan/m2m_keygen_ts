@@ -13,12 +13,12 @@ import { ParamsTypes } from './types/paramsTypes';
 export const secureCompare = (a: string, b: string): boolean => {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
 
-  var mismatch = a.length === b.length ? 0 : 1;
+  let mismatch = a.length === b.length ? 0 : 1;
   if (mismatch) {
     b = a;
   }
 
-  for (var i = 0, il = a.length; i < il; ++i) {
+  for (let i = 0, il = a.length; i < il; ++i) {
     mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
 
