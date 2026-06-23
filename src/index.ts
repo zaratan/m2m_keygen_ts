@@ -1,6 +1,9 @@
 import { secureCompare, sign, validate } from './signature';
 import { generateFetcher } from './fetcher';
-import { translateParamsToQuery } from './helpers/paramsEncoder';
+import {
+  parseQueryToParams,
+  translateParamsToQuery,
+} from './helpers/paramsEncoder';
 
 export {
   secureCompare,
@@ -8,4 +11,5 @@ export {
   validate,
   generateFetcher,
   translateParamsToQuery,
+  parseQueryToParams,
 };

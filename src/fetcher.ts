@@ -1,4 +1,7 @@
-import { translateParamsToQuery } from './helpers/paramsEncoder';
+import {
+  parseQueryToParams,
+  translateParamsToQuery,
+} from './helpers/paramsEncoder';
 import { sign } from './signature';
 
 export const generateFetcher =
@@ -20,21 +23,34 @@ export const generateFetcher =
 
     params.expiry ||= Math.round(Number(new Date()) / 1000) + 90;
 
-    headers[headerName] = sign({
-      secret,
-      algorithm,
-      params: params,
-      verb: init.method?.toLocaleUpperCase() || 'GET',
-      path,
-    });
+    const isGet = !init.method || init.method.toUpperCase() === 'GET';
+
+    if (isGet) {
+      const query = translateParamsToQuery(params);
+      const signedParams = parseQueryToParams(query);
+      headers[headerName] = sign({
+        secret,
+        algorithm,
+        params: signedParams,
+        verb: 'GET',
+        path,
+      });
+      entry = `${entry}${query}`;
+    } else {
+      headers[headerName] = sign({
+        secret,
+        algorithm,
+        params: params,
+        verb: init.method.toUpperCase(),
+        path,
+      });
+    }
 
     headers['Accept'] ||= 'application/json';
 
-    if (init.method && init.method.toLocaleUpperCase() !== 'GET') {
+    if (!isGet) {
       headers['Content-Type'] = 'application/json';
       init.body = JSON.stringify(params);
-    } else {
-      entry = `${entry}${translateParamsToQuery(params)}`;
     }
 
     init.headers = headers;
