@@ -1,6 +1,6 @@
 import { ParamsTypes, ParamsValueType } from '../types/paramsTypes';
 
-type FetchParamsType = {
+export type FetchParamsType = {
   [key: string]:
     | null
     | boolean

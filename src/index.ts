@@ -1,8 +1,9 @@
 import { secureCompare, sign, validate, validateRequest } from './signature';
-import { generateFetcher } from './fetcher';
+import { generateFetcher, FetcherInit } from './fetcher';
 import {
   parseQueryToParams,
   translateParamsToQuery,
+  FetchParamsType,
 } from './helpers/paramsEncoder';
 
 export {
@@ -14,3 +15,5 @@ export {
   translateParamsToQuery,
   parseQueryToParams,
 };
+
+export type { FetchParamsType, FetcherInit };
