@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-06-23
+
+### Added
+
+- `validateRequest`: validates the HMAC signature **and** enforces the `expiry` param (anti-replay), mirroring the Ruby `RackValidator` (`now < expiry < now + expiryWindow`, window configurable, default 120s). `validate` stays a pure HMAC check.
+
+### Changed
+
+- `secureCompare` now uses `crypto.timingSafeEqual` over fixed-length SHA-256 digests (Rails `variable_size_secure_compare` pattern): constant-time, with no length-based early return.
+
 ## [1.0.4] - 2026-06-23
 
 ### Fixed
@@ -82,7 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Basic skeleton for the package
 
-[unreleased]: https://github.com/zaratan/m2m_keygen_ts/compare/v1.0.4...HEAD
+[unreleased]: https://github.com/zaratan/m2m_keygen_ts/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.5
 [1.0.4]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.4
 [1.0.3]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.3
 [1.0.1]: https://github.com/Billcorporate/m2m_keygen_ts/releases/tag/v1.0.1
