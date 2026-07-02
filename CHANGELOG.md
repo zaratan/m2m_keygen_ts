@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-07-02
+
+### Fixed
+
+- README `validate` example used positional arguments; corrected to the single object form.
+
+### Changed
+
+- Overhaul the README: document `validateRequest` and `parseQueryToParams`, refresh the helpers and development sections, update the `translateParamsToQuery` example, and note the Ruby gem's boolean-in-POST limitation.
+- Replace the deprecated `prepublish` npm hook with `prepack` (so the build reliably runs before publishing); add `build` and `coverage` scripts.
+- Enforce Vitest v8 coverage thresholds in CI; harden the release workflow's version parsing.
+
 ## [1.0.6] - 2026-06-30
 
 ### Fixed
@@ -104,7 +116,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Basic skeleton for the package
 
-[unreleased]: https://github.com/zaratan/m2m_keygen_ts/compare/v1.0.6...HEAD
+[unreleased]: https://github.com/zaratan/m2m_keygen_ts/compare/v1.0.7...HEAD
+[1.0.7]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.7
 [1.0.6]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.6
 [1.0.5]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.5
 [1.0.4]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.4

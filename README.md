@@ -1,6 +1,8 @@
 # M2mKeygen
 
-This gem exists for simplifying Machine to Machine signature generation and verification in a secure way.
+This library simplifies Machine to Machine (M2M) signature generation and verification in a secure way.
+
+It is signature-compatible with the Ruby gem [`m2m_keygen`](https://github.com/zaratan/m2m_keygen_ruby): a request signed by this TypeScript client validates against the Ruby server, and vice versa.
 
 ## Installation
 
@@ -14,125 +16,120 @@ or with npm
 
 ## Usage
 
-### Signature
+### Signing
 
-This gem provides a module for signing and checking signature for HTTP requests
+Use the `sign` method to generate a signature for an HTTP request.
 
-Every method will use your secret key and eventually an encryption algorithm.
-
-```ts
-import { sign } from 'm2m-keygen';
-
-const signed = sign({ secret: "my_secret_key", algorithm: "sha256", ... });
-
-const signed = sign({ secret: "my_secret_key", ... }); // => Will default algorithm to sha512
-```
-
-#### Signing
-
-Use the `sign` method to generate a new signature.
-
-- `params` is a params hash. The order of keys isn't important as the lib will reformat them.
-- `verb` is the http verb
-- `path` is the path for the request
+- `secret` is your shared secret key.
+- `algorithm` is the HMAC algorithm — optional, defaults to `sha512`.
+- `params` is the params object. The order of keys does not matter; the library canonicalizes them.
+- `verb` is the HTTP verb.
+- `path` is the request path (without query string).
 
 ```ts
 import { sign } from "m2m-keygen";
 
 sign({
   secret: "my_secret_key",
+  algorithm: "sha256", // optional, defaults to sha512
   params: {
     a: "test",
     b: 1,
     d: ["a", "b"],
-    c: {
-      e: 45,
-    },
+    c: { e: 45 },
   },
   verb: "get",
   path: "/path",
-}); // => "a52168521868ebb37a38f90ec943163d9acb6ceb982206f437e1feb9ca32e7c1a8edef68f0ff4e195aeca1da93ae9afc8da214cb51a812fc6cc3730fdc7613fa"
+});
+// => "a52168521868ebb37a38f90ec943163d9acb6ceb982206f437e1feb9ca32e7c1a8edef68f0ff4e195aeca1da93ae9afc8da214cb51a812fc6cc3730fdc7613fa"
 ```
 
-After generating the signature send it alongside your request for verification on the receiver side.
+Send the resulting signature alongside your request (typically in a header) so the receiver can verify it.
 
-#### Verifying
+### Verifying
 
-Use the `validate` method to verify that a received signature correspond to the HTTP request.
-
-- `params` is a params hash. The order of keys isn't important as the lib will reformat them.
-- `verb` is the http verb
-- `path` is the path for the request
-- `signature` is the received signature
+Use `validate` to check that a received signature matches the request. It takes a single object argument.
 
 ```ts
 import { validate } from "m2m-keygen";
 
-validate(
+validate({
   secret: "my_secret_key",
   params: {
     a: "test",
     b: 1,
     d: ["a", "b"],
-    c: {
-      e: 45,
-    },
+    c: { e: 45 },
   },
   verb: "get",
   path: "/path",
   signature:
-    "a52168521868ebb37a38f90ec943163d9acb6ceb982206f437e1feb9ca32e7c1a8edef68f0ff4e195aeca1da93ae9afc8da214cb51a812fc6cc3730fdc7613fa"
-) // => true
+    "a52168521868ebb37a38f90ec943163d9acb6ceb982206f437e1feb9ca32e7c1a8edef68f0ff4e195aeca1da93ae9afc8da214cb51a812fc6cc3730fdc7613fa",
+}); // => true
 ```
 
-If the validation is true, the request was signed with the same algorithm and same secret key.
+`validate` performs a constant-time HMAC comparison only. It does **not** check any expiry — use `validateRequest` for that.
 
-#### Fetch API with auto signature generation and expiry
+### Verifying with anti-replay (`validateRequest`)
 
-An helper as been added to generate a fetch function that will automatically sign the request and add an expiry.
+`validateRequest` validates the signature **and** enforces the `expiry` param, mirroring the Ruby `RackValidator`. It returns `true` only when the signature is valid and `now < expiry < now + expiryWindow`.
 
-The `fetcher` argument is any function that is compatible with the fetch API.
+```ts
+import { validateRequest } from "m2m-keygen";
 
-The result behaves slightly differently than a normal fetch function. It expects you to use 3 arguments:
+validateRequest({
+  secret: "my_secret_key",
+  params: { a: "test", expiry: 1893456000 },
+  verb: "get",
+  path: "/path",
+  signature: "…",
+  expiryWindow: 120, // optional, in seconds, defaults to 120
+}); // => true if the signature is valid AND the expiry is within the window
+```
 
-- The first one is the path without any query arguments
-- The second one is an object with the params to be sent
-- The last one is anything you would like to pass to the fetch function as a second argument (method, headers, …).
+`expiry` is a Unix timestamp (seconds). The `generateFetcher` helper below injects one automatically.
 
-The fetcher will add an expiry date to 90 seconds in the future (unless a previous expiry is already in params).
-It will then transform the params into query arguments or encode them as JSON in the body depending on the method (GET, POST, …) you use.
+### Fetch API with automatic signing and expiry
+
+`generateFetcher` wraps any fetch-compatible function so every request is signed and given an expiry automatically.
+
+The returned fetcher takes 3 arguments:
+
+- the URL (its path, without query string, is what gets signed);
+- an object with the params to send;
+- an optional init object forwarded to the underlying fetch (method, headers, …).
+
+It adds an `expiry` 90 seconds in the future (unless `params.expiry` is already set), then encodes the params as a query string (GET) or as a JSON body (POST/PUT/…) depending on the method.
 
 ```ts
 import { generateFetcher } from "m2m-keygen";
 
 const fetcher = generateFetcher({
-  fetcher: fetch, // fetch can be any function compatible with the fetch API
+  fetcher: fetch, // any function compatible with the fetch API
   secret: "secret",
-  algorithm: "sha512", // optional, default to sha512
-  headerName: "X-Signature", // optional, default to X-Signature
+  algorithm: "sha512", // optional, defaults to sha512
+  headerName: "X-Signature", // optional, defaults to X-Signature
 });
 
-// The generated fetcher, except for the params/body/query will behave exactly like fetch does.
+// Apart from the params/body/query handling, the returned fetcher behaves like fetch.
 fetcher(
   "http://example.com/oki",
   { a: 1, b: 2 },
   { method: "post", headers: { "My-Header": "Yay" } }
 )
-  .then((res) => {
-    console.log(res);
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+  .then((res) => console.log(res))
+  .catch((err) => console.log(err));
 ```
 
-#### Helpers
+The caller's `params` and `init` objects are treated as immutable and are never modified.
 
-This lib exposes a few helpers that can be used in other projects.
+### Helpers
 
-##### translateParamsToQuery
+The library also exposes a few helpers.
 
-This helper will translate a params hash to a query string.
+#### translateParamsToQuery
+
+Encodes a params object into a URL query string (Rack/Rails bracket notation). Keys and values are URL-encoded, and `null`/`undefined`/empty values are omitted.
 
 ```ts
 import { translateParamsToQuery } from "m2m-keygen";
@@ -145,48 +142,57 @@ translateParamsToQuery({
   e: [1, 2, 3],
   f: { a: 1, b: 2 },
   g: null,
-}); // => '?a=1&b=2&c=true&d=false&e[]=1&e[]=2&e[]=3&f[a]=1&f[b]=2&g=false'
+});
+// => "?a=1&b=2&c=true&d=false&e%5B%5D=1&e%5B%5D=2&e%5B%5D=3&f%5Ba%5D=1&f%5Bb%5D=2"
+// (g is omitted; %5B%5D is "[]", %5Ba%5D is "[a]")
 ```
 
-##### secureCompare
+#### parseQueryToParams
 
-This helper will compare two strings in a secure way.
-Extracted from: [vadimdemedes/secure-compare](https://github.com/vadimdemedes/secure-compare)
+The inverse of `translateParamsToQuery` — reconstructs params from a query string the way a Rack server does (all scalar values come back as strings).
+
+```ts
+import { parseQueryToParams } from "m2m-keygen";
+
+parseQueryToParams("?a=1&e%5B%5D=x&e%5B%5D=y&f%5Ba%5D=z");
+// => { a: "1", e: ["x", "y"], f: { a: "z" } }
+```
+
+#### secureCompare
+
+Compares two strings in constant time using `crypto.timingSafeEqual` over fixed-length SHA-256 digests, so there is no length-based early return (the Rails `variable_size_secure_compare` pattern).
 
 ```ts
 import { secureCompare } from "m2m-keygen";
 
 secureCompare("abc", "abc"); // => true
-
 secureCompare("你好世界", "你好世界"); // => true
-
 secureCompare("abc", "ab"); // => false
-
 secureCompare("abc", "abd"); // => false
 ```
 
-## How does it works
+## How it works
 
-This is intended for a secure discussion between 2 servers and not something in a browser as the secret key must be stored and used both side (and you don't want to send the secret key in the browser).
+This is intended for a secure exchange between two servers, not for use in a browser — the secret key must be stored and used on both sides (and you never want to ship the secret to a browser).
 
-Both server will have the same secret key.
-The sender will generate a signature matching the HTTP request it will be sending and add it to the request in a designated header.
-The receiver will generate the same signature from the HTTP request it has received and will compare it with the signature in the header.
+Both servers share the same secret key. The sender generates a signature for the HTTP request it is about to send and adds it to a designated header. The receiver regenerates the signature from the request it received and compares it with the one in the header. The comparison is done in constant time via `crypto.timingSafeEqual`.
 
-The comparison will be done in constant time (i.e. secure) because both string will be hexdigest from a HMAC with the same algorithm.
+### Cross-language notes (Ruby gem)
+
+Signatures are computed over a canonical string that both this library and the Ruby gem produce identically, so GET and POST requests round-trip across languages. One current limitation: the Ruby gem does not accept **boolean** values inside a JSON **POST body**. Booleans work fine in a GET query string (they are stringified to `"true"`/`"false"`). If you target the Ruby validator with a POST, send booleans as strings or numbers.
 
 ## Development
 
-After checking out the repo, run `yarn install` to install dependencies. Then, run `yarn test` to run the tests.
+After checking out the repo, run `pnpm install` to install dependencies, then `pnpm test` to run the tests.
 
 Every commit/push is checked by husky.
 
-Tool used in dev:
+Tools used in development:
 
-- ESlint
+- ESLint
 - Prettier
 - TypeScript
-- Jest
+- Vitest
 
 ## Contributing
 
@@ -194,7 +200,7 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/zarata
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+This package is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Code of Conduct
 

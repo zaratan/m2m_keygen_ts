@@ -24,8 +24,8 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests with coverage
+        run: pnpm coverage
       - name: Run type checking (Typescript)
         run: pnpm exec tsc --noEmit
   lint:
