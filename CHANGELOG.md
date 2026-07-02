@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-06-30
+
+### Fixed
+
+- The signed-request fetcher no longer mutates the caller's `params`/`init` objects — inputs are treated as immutable. This also fixes a bug where reusing the same `params` object across calls reused the first call's (now stale) `expiry`.
+- Request paths are extracted with the URL API: query string and fragment are stripped, a double slash is preserved, and a missing path is normalized to `/` (matching the Ruby server's `req.path`). This removes latent GET signature mismatches when the entry URL already carried a query string.
+- A caller-supplied `expiry: 0` is now preserved (was overwritten by the default).
+
+### Changed
+
+- The fetcher API is fully typed (no `any`): `FetchParamsType` and `FetcherInit` are exported and the wrapper is generic over the response type.
+
 ## [1.0.5] - 2026-06-23
 
 ### Added
@@ -92,7 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Basic skeleton for the package
 
-[unreleased]: https://github.com/zaratan/m2m_keygen_ts/compare/v1.0.5...HEAD
+[unreleased]: https://github.com/zaratan/m2m_keygen_ts/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.6
 [1.0.5]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.5
 [1.0.4]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.4
 [1.0.3]: https://github.com/zaratan/m2m_keygen_ts/releases/tag/v1.0.3

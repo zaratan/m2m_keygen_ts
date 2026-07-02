@@ -9,8 +9,7 @@ export default tseslint.config(
   prettierRecommended,
   {
     rules: {
-      // TODO(Phase 3): repasser en 'error' une fois les `any` retirés de fetcher.ts
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -20,6 +19,12 @@ export default tseslint.config(
           destructuredArrayIgnorePattern: '^_',
         },
       ],
+    },
+  },
+  {
+    files: ['tests/**'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   }
 );
