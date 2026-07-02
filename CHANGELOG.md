@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update the README: document `validateRequest` and `parseQueryToParams`, refresh the `translateParamsToQuery`/`secureCompare` docs, and switch the dev references to pnpm/Vitest.
 - Replace the deprecated `prepublish` npm hook with `prepack` (so the build reliably runs before publishing); add `build` and `coverage` scripts.
 - Enforce Vitest v8 coverage thresholds in CI; harden the release workflow's version parsing.
+- Type-check the tests in CI too (new `tsconfig.test.json` + `typecheck` script), so test-only type errors are no longer invisible.
 
 ## [1.0.6] - 2026-06-30
 
