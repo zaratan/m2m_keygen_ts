@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+# Self-contained bundle for the TS<->Ruby end-to-end test server.
+# Pulls the real m2m_keygen Ruby gem straight from its repo (so this E2E always
+# tracks the deployed gem, including future fixes), plus a Rack server to host it.
+source 'https://rubygems.org'
+
+gem 'm2m_keygen',
+    git: 'https://github.com/zaratan/m2m_keygen_ruby.git',
+    branch: 'main'
+
+gem 'rackup', '~> 2.2'
+gem 'puma', '~> 6.0'

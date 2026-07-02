@@ -1,3 +1,4 @@
 pnpm lint
+pnpm typecheck
 pnpm test
 bin/check_version_change

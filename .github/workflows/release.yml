@@ -26,10 +26,10 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Run tests
-        run: pnpm test
-      - name: Run type checking (Typescript)
-        run: pnpm exec tsc --noEmit
+      - name: Run tests with coverage
+        run: pnpm coverage
+      - name: Run type checking (src + tests)
+        run: pnpm typecheck
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -70,10 +70,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build js
-        run: pnpm exec tsc
+        run: pnpm build
       - name: Ensure npm supports trusted publishing
         run: npm install -g npm@latest
       - name: Create tag and push it
-        run: git tag "v`cat package.json | grep "version" | grep -E -o "[0-9]+\.[0-9]+\.[0-9]+"`" && git push --tags
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          git tag "v$VERSION"
+          git push --tags
       - name: Publish to npm (Trusted Publisher / OIDC)
         run: npm publish --access public --provenance

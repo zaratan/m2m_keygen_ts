@@ -24,10 +24,10 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Run tests
-        run: pnpm test
-      - name: Run type checking (Typescript)
-        run: pnpm exec tsc --noEmit
+      - name: Run tests with coverage
+        run: pnpm coverage
+      - name: Run type checking (src + tests)
+        run: pnpm typecheck
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -43,3 +43,47 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Check linting
         run: pnpm lint
+  e2e_ruby:
+    # Cross-language end-to-end test: the TS client signs requests and a live
+    # Ruby Rack server (the real m2m_keygen gem, pulled from git in
+    # tests/e2e/ruby/Gemfile) validates them. Proves TS<->Ruby signature parity
+    # over real HTTP.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - name: Install E2E server gems (pulls the gem fresh from git main)
+        working-directory: tests/e2e/ruby
+        run: bundle install --jobs 4 --retry 3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Boot Ruby server and run TS -> Ruby E2E
+        env:
+          M2M_SECRET: e2e-test-secret
+          M2M_RUBY_URL: http://localhost:9292
+        run: |
+          set -euo pipefail
+          ( cd tests/e2e/ruby && bundle exec rackup --server puma config.ru -p 9292 ) \
+            > /tmp/rack.log 2>&1 &
+          RACK_PID=$!
+          for i in $(seq 1 30); do
+            curl -s -o /dev/null "http://localhost:9292/" && break
+            if ! kill -0 "$RACK_PID" 2>/dev/null; then
+              echo "Rack server died during boot:"; cat /tmp/rack.log; exit 1
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Rack server never came up:"; cat /tmp/rack.log; exit 1
+            fi
+            sleep 1
+          done
+          pnpm vitest run tests/e2e/ts-to-ruby.e2e.test.ts
