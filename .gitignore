@@ -9,3 +9,8 @@ node_modules
 # Build generated files
 dist
 .eslintcache
+
+# E2E Ruby server bundle (resolved fresh from the gem's git main on each run)
+tests/e2e/ruby/Gemfile.lock
+tests/e2e/ruby/.bundle
+tests/e2e/ruby/vendor
