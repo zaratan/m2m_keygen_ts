@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateFetcher } from '../../src/index';
+import { generateFetcher, FetchParamsType } from '../../src/index';
 
 /**
  * TS -> Ruby cross-language end-to-end test.
@@ -23,7 +23,7 @@ suite('TS client -> live Ruby RackValidator', () => {
   const url = `${RUBY_URL}/api/resource`;
 
   // Value shapes supported by BOTH the TS lib and the Ruby gem.
-  const shapes: Record<string, Record<string, unknown>> = {
+  const shapes: Record<string, FetchParamsType> = {
     scalars: { a: 1, b: 'x' },
     'array of strings': { e: ['a', 'b'] },
     'array of numbers': { e: [1, 2, 3] },

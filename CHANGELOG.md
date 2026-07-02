@@ -10,10 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - README `validate` example used positional arguments; corrected to the single object form.
+- `FetcherInit` is now a subtype of `RequestInit`, so the native `fetch` can be passed directly to `generateFetcher` without a type error.
 
 ### Changed
 
-- Overhaul the README: document `validateRequest` and `parseQueryToParams`, refresh the helpers and development sections, update the `translateParamsToQuery` example, and note the Ruby gem's boolean-in-POST limitation.
+- Update the README: document `validateRequest` and `parseQueryToParams`, refresh the `translateParamsToQuery`/`secureCompare` docs, and switch the dev references to pnpm/Vitest.
 - Replace the deprecated `prepublish` npm hook with `prepack` (so the build reliably runs before publishing); add `build` and `coverage` scripts.
 - Enforce Vitest v8 coverage thresholds in CI; harden the release workflow's version parsing.
 

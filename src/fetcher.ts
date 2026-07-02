@@ -6,14 +6,14 @@ import {
 import { sign } from './signature';
 
 /**
- * Pass-through init type for the underlying fetcher. Intentionally permissive
- * so callers can forward any option the native `fetch` API accepts.
+ * Init object forwarded to the underlying fetcher. It is the standard
+ * `RequestInit` with `headers` narrowed to a plain `Record<string, string>`
+ * (what the signing layer merges into). Because it is a subtype of `RequestInit`,
+ * the native `fetch` can be passed directly as the `fetcher`, and callers can
+ * still forward any standard fetch option (credentials, mode, signal, …).
  */
-export type FetcherInit = {
-  method?: string;
+export type FetcherInit = Omit<RequestInit, 'headers'> & {
   headers?: Record<string, string>;
-  body?: unknown;
-  [key: string]: unknown;
 };
 
 /**

@@ -5,6 +5,7 @@ import {
   generateFetcher,
   validateRequest,
   parseQueryToParams,
+  FetchParamsType,
 } from '../../src/index';
 
 const SECRET = 'e2e-test-secret';
@@ -39,7 +40,7 @@ function requestHandler(req: IncomingMessage, res: ServerResponse): void {
       try {
         const body = Buffer.concat(chunks).toString('utf8');
 
-        const params = JSON.parse(body) as Record<string, unknown>;
+        const params = JSON.parse(body);
         const valid = validateRequest({
           secret: SECRET,
           algorithm: 'sha256',
@@ -234,7 +235,7 @@ describe('rejected requests (401)', () => {
 
   // Produce a genuinely signed request (correct secret), capturing the URL and
   // headers, so the tampering tests below alter exactly one thing.
-  const captureSigned = async (params: Record<string, unknown>) => {
+  const captureSigned = async (params: FetchParamsType) => {
     let captured: { entry: string; init: any } = { entry: '', init: {} };
     const capture = generateFetcher({
       fetcher: (entry: any, init: any) => {
